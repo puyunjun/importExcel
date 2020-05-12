@@ -76,6 +76,8 @@ class DealDatasController extends Controller
 
             //先匹配学生姓名
 
+            //todo  首先使用使用者名称和导师名称到 dj_user_student_view视图里面去匹配，
+            //todo 取出学生id(使用者id)，并找到导师工号，再去student表里面找导师id，若无法取出，则取student里面的学生id.导师同样取student里面的id
             //导师姓名
             $tutor = $item['tutor'];
 
