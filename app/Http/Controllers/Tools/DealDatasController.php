@@ -16,9 +16,10 @@ class DealDatasController extends Controller
     public function index(Request $request)
     {
 
-        $jsonData = file_get_contents('noImportDeviceRecord.json');
+        /*$jsonData = file_get_contents('noImportDeviceRecord.json');
+        $jsonAllData = file_get_contents('noImportRecord.json');
 
-        dd(json_decode($jsonData,true));
+        dd(count(json_decode($jsonAllData,true)),json_decode($jsonData,true));*/
 
         $file = $request->file('datas');
 

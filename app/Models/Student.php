@@ -39,7 +39,7 @@ class Student extends Model
            ->whereIn('A.user_name', $names)
            ->where($where)
            ->leftJoin('dj_user as B','A.teacher_id', '=', 'B.user_id')
-           ->select(['A.user_id','A.user_name','A.teacher_id','B.user_name as teacher_name'])
+           ->select(['A.*','B.user_name as teacher_name'])
            ->get()
            ->toArray();
 

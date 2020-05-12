@@ -63,6 +63,9 @@ class Reservation extends Model
         //使用人id信息
         $userIdInfo = Student::getUserId($userInfo, Student::STUDENT_ROLE);
 
+        self::insertStudentExcel($userIdInfo, $userInfo,0);
+
+
         $tutorInfo = array_unique(array_column($data, 'tutor'));  //导师信息
 
         $operator = array_unique(array_column($data, 'operator')); //操作者信息
@@ -70,8 +73,12 @@ class Reservation extends Model
         //导师id信息
         $teacherIdInfo = Student::getUserId($tutorInfo, Student::TEACHER_ROLE);
 
+        self::insertStudentExcel($teacherIdInfo, $tutorInfo,1);
+
         //操作员id信息,学生id
         $operatorIdInfo = Student::getUserId($operator, 0);
+
+        self::insertStudentExcel($operatorIdInfo, $operator,0);
 
         $compareData = [
             'deviceInfo'=>$deviceData,
@@ -80,7 +87,7 @@ class Reservation extends Model
             'operatorInfo'=>$operatorIdInfo,
         ];
 
-        return self::compareUserToId($data, $compareData);
+        //return self::compareUserToId($data, $compareData);
 
     }
 
@@ -227,5 +234,35 @@ class Reservation extends Model
 
 
         return $arr;
+    }
+
+    protected static function insertStudentExcel($userIdInfo,$userInfo, $type=0)
+    {
+        //插入信息
+        $grepStudent = array_column($userIdInfo,'user_name');
+
+
+        foreach ($userIdInfo as $item){
+            //获取当前school_id
+            $schoolId = DB::table('school')->where('name',$item->school_name)->value('id');
+            $insertStu[] = [
+                'name'=>$item->user_name,
+                'type'=>$type,//学生
+                'mobile'=>$item->mobile,
+                'school_id'=>$schoolId,
+                'email'=>$item->email,
+                'no'=>$item->school_number
+            ];
+        }
+        //插入
+        DB::table('student_excel')->insertOrIgnore($insertStu ?? []);
+        //没有匹配到的
+        $diffStudent = array_diff($userInfo,array_unique($grepStudent));
+        foreach ($diffStudent as $k=>$value){
+            $diffInsertData[] = [
+                'name'=>$value
+            ];
+        }
+        DB::table('student_excel')->insertOrIgnore($diffInsertData ?? []);
     }
 }
