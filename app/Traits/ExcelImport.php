@@ -31,7 +31,17 @@ Trait ExcelImport
             if($key == 0){
                 continue;
             }
-
+            $num = count($this->excelName) - count($value);
+            if($num > 0){
+                for ($i = 0; $i<$num; $i++){
+                    array_push($value,1);
+                }
+            }
+            if($num < 0){
+                for ($i = 0; $i<abs($num); $i++){
+                    array_push($this->excelName,1);
+                }
+            }
             $data[] = array_combine($this->excelName, $value);
         }
         return $data;

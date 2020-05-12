@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Student extends Model
 {
@@ -13,11 +14,11 @@ class Student extends Model
 
     public $timestamps = false;
 
-    //老师角色
-    const TEACHER_ROLE = 1;
+    //导师角色
+    const TEACHER_ROLE = 2;
 
     //学生角色
-    const STUDENT_ROLE = 2;
+    const STUDENT_ROLE = 1;
 
     /**
      * 获取姓名及角色对应的id
@@ -27,9 +28,18 @@ class Student extends Model
      */
     public static function getUserId($names = [], $roleType = 1)
     {
-       return Student::whereIn('name', $names)
-           ->where('type', $roleType)
-           ->select(['id','name'])
+        if(!$roleType){
+            $where = [];
+        }else{
+            $where = [
+                ['A.role', '=', $roleType]
+            ];
+        }
+       return DB::table('dj_user as A')
+           ->whereIn('A.user_name', $names)
+           ->where($where)
+           ->leftJoin('dj_user as B','A.teacher_id', '=', 'B.user_id')
+           ->select(['A.user_id','A.user_name','A.teacher_id','B.user_name as teacher_name'])
            ->get()
            ->toArray();
 
