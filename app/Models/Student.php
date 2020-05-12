@@ -28,13 +28,24 @@ class Student extends Model
      */
     public static function getUserId($names = [], $roleType = 1)
     {
-        if(!$roleType){
+        if($roleType == 1){
+            //学生
+            $where = [
+                ['A.teacher_id', '>', 0]
+            ];
+        }elseif($roleType == 2){
+            //导师
+            $where = [
+                ['A.teacher_id', '=', 0]
+            ];
+        }
+        /*if(!$roleType){
             $where = [];
         }else{
             $where = [
                 ['A.role', '=', $roleType]
             ];
-        }
+        }*/
        return DB::table('dj_user as A')
            ->whereIn('A.user_name', $names)
            ->where($where)
