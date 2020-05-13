@@ -6,6 +6,7 @@ use App\Traits\ExcelImport;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Device;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use function Matrix\trace;
 
 class Reservation extends Model
@@ -215,7 +216,8 @@ class Reservation extends Model
             $q = rtrim($q, ", ")." WHERE ".$referenceColumn." IN (".  rtrim($whereIn, ', ').")";
 
             // Update
-            return DB::update(DB::raw($q));
+            return $q;
+            //return DB::update(DB::raw($q));
 
         } else {
             return false;
@@ -264,5 +266,97 @@ class Reservation extends Model
             ];
         }
         DB::table('student_excel')->insertOrIgnore($diffInsertData ?? []);
+    }
+
+
+    public static function dealOldData($data = [])
+    {
+        $noDevice = [];
+        $insertData = [];
+        //分成100条的数据块
+        $updatePromoIdData = [];
+        foreach ($data as $k=>$item){
+            //匹配设备id
+            $deviceId = DB::table('device')->where('remark','like','%'.$item['equipmentName'].'%')->value('id');
+
+            if(!$deviceId){
+
+                $noDevice[] = $item['equipmentName'];
+            }
+            //学生姓名
+            $studentName = $item['user'];
+
+            $teacherName = $item['tutor'];
+            //先匹配学生姓名
+
+            // 首先使用使用者名称和导师名称到 dj_user_student_view视图里面去匹配，
+            // 并找到导师工号，再去student表里面找导师id，若无法取出，则取student里面的学生id.导师同样取student里面的id
+            //导师姓名
+            $sql = "select * from dj_user_student_view where `user_name` = '$studentName' and teacherName = '$teacherName' limit 1";
+
+            $djUserStudent = DB::select(DB::raw($sql));
+            if($djUserStudent[0] ?? false){
+                //通过学生学号和导师工号找出对应的id
+                $studentIdInfo = DB::table('student')
+                    ->where([
+                        ['no', '=', $djUserStudent[0]->school_number],
+                        ['name', '=', $djUserStudent[0]->user_name]
+                    ])
+                    ->first();
+
+                $teacherIdInfo = DB::table('cq_student')
+                    ->where([
+                        ['no', '=', $djUserStudent[0]->teacherNumber],
+                        ['name', '=', $djUserStudent[0]->teacherName]
+                    ])
+                    ->first();
+            }
+
+            //学生id
+            $studentId = $studentIdInfo->id ?? 0;
+            //导师id
+            $teacherId = $teacherIdInfo->id ?? 0;
+
+            //获取操作员id
+            $operateIdInfo = DB::table('cq_student')->where('name',$item['operator'])->first();
+
+            $operateId = $operateIdInfo ? $operateIdInfo->id : 0;
+
+            $insertData[] = [
+                'device_id'=>$deviceId ? $deviceId : 0,
+                'student_id'=>$studentId,
+                'teacher_id'=>$teacherId,
+                'opera_id'=>$operateId,
+                'sample_num'=>$item['numbers'] ? intval($item['numbers']) : 0,
+                'begin_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
+                'finish_time'=>strtotime($item['endTIme']) ? strtotime($item['startTime']) : 0,
+                'amount'=>$item['consumptionAmount'] ? intval($item['consumptionAmount']) : 0,
+                'create_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
+                'remark'=>$item['remark'] ?? '',
+                'status'=>1
+            ];
+            if($teacherId){
+                $updatePromoIdData[] = [
+                    'id'=>$teacherId,
+                    'promo_id'=>$item['consumptionAmount'],
+                ];
+            }
+
+        }
+
+        //Log::info($insertData);
+        //添加到记录中
+        DB::beginTransaction();
+        try{
+            Reservation::insert($insertData);
+            //$res = Reservation::updateBatch('student',$updatePromoIdData);
+            //Log::info($res);
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            Log::info($e->getMessage());
+        }
+
+
     }
 }
