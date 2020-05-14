@@ -768,3 +768,15 @@ INSERT INTO `school`.`student` (`id`, `user_id`, `no`, `tag`, `name`, `name2`, `
 INSERT INTO `school`.`student` (`id`, `user_id`, `no`, `tag`, `name`, `name2`, `mobile`, `mobile2`, `cid`, `sex`, `type`, `code`, `teacher_id`, `school_id`, `major_id`, `class_id`, `dorm_id`, `up_hash`, `photo`, `email`, `remark`, `biz`, `birth_time`, `start_time`, `finish_time`, `create_time`, `update_time`, `promo_id`, `status`) VALUES ('33652', '0', '201909021076', '', '张琴', '', '13518398978', '', '', '0', '0', '', '20742', '280', '0', '0', '0', '', '', '1328386572@qq.com', '', '', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `school`.`student` (`id`, `user_id`, `no`, `tag`, `name`, `name2`, `mobile`, `mobile2`, `cid`, `sex`, `type`, `code`, `teacher_id`, `school_id`, `major_id`, `class_id`, `dorm_id`, `up_hash`, `photo`, `email`, `remark`, `biz`, `birth_time`, `start_time`, `finish_time`, `create_time`, `update_time`, `promo_id`, `status`) VALUES ('33653', '0', '201909021061', '', '林璐丹', '', '13158624123', '', '', '0', '0', '', '20758', '280', '0', '0', '0', '', '', '964452189@qq.com', '', '', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `school`.`student` (`id`, `user_id`, `no`, `tag`, `name`, `name2`, `mobile`, `mobile2`, `cid`, `sex`, `type`, `code`, `teacher_id`, `school_id`, `major_id`, `class_id`, `dorm_id`, `up_hash`, `photo`, `email`, `remark`, `biz`, `birth_time`, `start_time`, `finish_time`, `create_time`, `update_time`, `promo_id`, `status`) VALUES ('33654', '0', '20190902033t', '', '王润', '', '13308362534', '', '', '0', '0', '', '20742', '280', '0', '0', '0', '', '', '1096478374@qq.com', '', '', '0', '0', '0', '0', '0', '0', '0');
+
+
+insert into student (`name`,create_time) values('李鹏',1589435357)
+insert into student (`name`,create_time) values('李亚楠',1589435357)
+insert into student (`name`,create_time) values('王路',1589435357)
+insert into student (`name`,create_time) values('张鹏飞',1589435357)
+insert into student (`name`,create_time) values('刘庆',1589435357)
+insert into student (`name`,create_time) values('陈豪',1589435357)
+insert into student (`name`,create_time) values('王新',1589435357)
+insert into student (`name`,create_time) values('刘超',1589435357)
+insert into student (`name`,`type`,create_time) values('袁媛',1,1589435357)
+insert into student (`name`,`type`,create_time) values('尹光志',1,1589435357)

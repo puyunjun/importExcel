@@ -18,7 +18,7 @@ class DealDatasController extends Controller
     //首页
     public function index(Request $request)
     {
-        $this->takeCopyData();
+        //$this->takeCopyData();
 
         /*$this->addStudentStu();
 
@@ -41,7 +41,7 @@ class DealDatasController extends Controller
 
             $da = $model->getCombineData($data);
 
-           /* $this->dealOldData($da);
+            /*$this->dealOldData($da);
             return '';*/
             //处理数据
             $dealRes = array_chunk($da,  100);
@@ -81,8 +81,76 @@ class DealDatasController extends Controller
         $noDevice = [];
         $insertData = [];
         //分成100条的数据块
+        $insertNewData = [];
+        $studentSql = "SELECT
+	`student`.`id` AS `id`,
+	`student`.`user_id` AS `user_id`,
+	`student`.`no` AS `no`,
+	`student`.`tag` AS `tag`,
+	`student`.`name` AS `name`,
+	`student`.`name2` AS `name2`,
+	`student`.`mobile` AS `mobile`,
+	`student`.`mobile2` AS `mobile2`,
+	`student`.`cid` AS `cid`,
+	`student`.`sex` AS `sex`,
+	`student`.`type` AS `type`,
+	`student`.`code` AS `code`,
+	`student`.`teacher_id` AS `teacher_id`,
+	`student`.`school_id` AS `school_id`,
+	`student`.`major_id` AS `major_id`,
+	`student`.`class_id` AS `class_id`,
+	`student`.`dorm_id` AS `dorm_id`,
+	`student`.`up_hash` AS `up_hash`,
+	`student`.`photo` AS `photo`,
+	`student`.`email` AS `email`,
+	`student`.`remark` AS `remark`,
+	`student`.`biz` AS `biz`,
+	`student`.`birth_time` AS `birth_time`,
+	`student`.`start_time` AS `start_time`,
+	`student`.`finish_time` AS `finish_time`,
+	`student`.`create_time` AS `create_time`,
+	`student`.`update_time` AS `update_time`,
+	`student`.`promo_id` AS `promo_id`,
+	`student`.`status` AS `status`
+FROM
+	`student`
+WHERE
+	`student`.`school_id` IN (
+		SELECT
+			`school`.`id`
+		FROM
+			`school`
+		WHERE
+			(`school`.`pid` = 2)
+	)";
+        $allStudent = DB::select(DB::raw($studentSql));
 
+        //dd(array_unique(array_column($allStudent,'name')));
+        $allUser['student'] = [];
+        $allUser['tutor'] = [];
+        $allUser['operator'] = [];
         foreach ($data as $k=>$item){
+            array_push($allUser['student'],$item['user']);
+            array_push($allUser['tutor'],$item['tutor']);
+            array_push($allUser['operator'],$item['operator']);
+
+            continue;
+            /*匹配没有存入student表里面的师生*/
+            $hasNoRecord = DB::table('cq_student')->where('name',$item['user'])->value('id');
+            $hasNoRecordD = DB::table('dj_user_student_view')
+                ->where('user_name',$item['user'])
+                ->value('user_id');
+            if(!$hasNoRecord){
+                if(!$hasNoRecordD){
+                    //记录新的
+                    $sqlNew = "INSERT ";
+                    Log::info();
+                    $insertNewData [] = [
+                        'name'=>$item['']
+                    ];
+                }
+            }
+            continue;
             //匹配设备id
             $deviceId = DB::table('device')->where('remark','like','%'.$item['equipmentName'].'%')->value('id');
 
@@ -144,6 +212,34 @@ class DealDatasController extends Controller
             ];
 
         }
+
+        foreach ($allUser as $k=>$v){
+            $allUser[$k] = array_unique($v);
+        }
+
+        //查询没有记录进去的学生
+        $hasReStuD = DB::table('student')->whereIn('name',$allUser['student'])->get()->toArray();
+        $hasArrStu = array_unique(array_column($hasReStuD,'name'));
+        $noStu = array_diff($allUser['student'], $hasArrStu);
+        foreach ($noStu as $vs){
+            Log::info('insert into student (`name`,`type`) value (\''.$vs.'\',0);');
+        }
+        //导师
+        $hasReStuDT = DB::table('student')->whereIn('name',$allUser['tutor'])->get()->toArray();
+        $hasArrStuT = array_unique(array_column($hasReStuDT,'name'));
+        $noStuT = array_diff($allUser['tutor'], $hasArrStuT);
+        foreach ($noStuT as $vst){
+            Log::info('insert into student (`name`,`type`) value (\''.$vst.'\',1);');
+        }
+        //操作员
+        $hasReStuDO = DB::table('student')->whereIn('name',$allUser['operator'])->get()->toArray();
+        $hasArrStuO = array_unique(array_column($hasReStuDO,'name'));
+        $noStuO = array_diff($allUser['operator'], $hasArrStuO);
+
+        foreach ($noStuO as $vso){
+            Log::info('insert into student (`name`) value (\''.$vso.'\');');
+        }
+        dd($noStu, $noStuT, $noStuO);
         //dd(array_unique($noDevice));
 
     }

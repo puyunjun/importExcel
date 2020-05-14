@@ -314,19 +314,90 @@ class Reservation extends Model
 
             //学生id
             $studentId = $studentIdInfo->id ?? 0;
+            if($studentId == 0){
+                //查找只有姓名的
+                $studentId = DB::table('student')
+                    ->where('name',$item['user'])
+                    ->whereBetween('school_id',[269,294])
+                    //->whereBetween('id',[34037,34551])
+                    ->value('id');
+
+                if(!$studentId){
+                    //还为空继续查找
+                    $studentId = DB::table('student')
+                        ->where('name',$item['user'])
+                        ->where('id','>',34037)
+                        ->value('id');
+                    if(!$studentId){
+                        Log::info('学生姓名:'.$item['user']);
+                    }
+                }
+
+            }
+
             //导师id
             $teacherId = $teacherIdInfo->id ?? 0;
+            if($teacherId == 0){
+                $teacherId = DB::table('student')
+                    ->where('name',$item['tutor'])
+                    ->whereBetween('school_id',[269,294])
+                    //->whereBetween('id',[34037,34551])
+                    ->value('id');
 
+                if(!$teacherId){
+                    //还为空继续查找
+                    $teacherId = DB::table('student')
+                        ->where('name',$item['tutor'])
+                        ->where('id','>',34037)
+                        ->value('id');
+                    if(!$teacherId){
+                        Log::info('导师姓名:'.$item['tutor']);
+                    }
+                }
+                /*$teacherId = DB::table('student')
+                    ->where('name',$item['tutor'])
+                    ->whereBetween('id',[34037,34551])
+                    ->value('id');
+                if(!$teacherId){
+                    //Log::info($item['tutor']);
+                }*/
+            }
             //获取操作员id
             $operateIdInfo = DB::table('cq_student')->where('name',$item['operator'])->first();
 
             $operateId = $operateIdInfo ? $operateIdInfo->id : 0;
 
+            if($operateId == 0){
+                $operateId = DB::table('student')
+                    ->where('name',$item['operator'])
+                    ->whereBetween('school_id',[269,294])
+                    //->whereBetween('id',[34037,34551])
+                    ->value('id');
+
+                if(!$operateId){
+                    //还为空继续查找
+                    $operateId = DB::table('student')
+                        ->where('name',$item['operator'])
+                        ->where('id','>',34037)
+                        ->value('id');
+                    if(!$operateId){
+                        Log::info('操作员姓名:'.$item['operator']);
+                    }
+                }
+                /*$operateId = DB::table('student')
+                    ->whereBetween('id',[34037,34551])
+                    ->where('name',$item['operator'])
+                    ->value('id');
+                if(!$operateId){
+                    //Log::info($item['operator']);
+                }*/
+            }
+
             $insertData[] = [
                 'device_id'=>$deviceId ? $deviceId : 0,
-                'student_id'=>$studentId,
-                'teacher_id'=>$teacherId,
-                'opera_id'=>$operateId,
+                'student_id'=>$studentId ? $studentId : 0,
+                'teacher_id'=>$teacherId ? $teacherId : 0,
+                'opera_id'=>$operateId ? $operateId : 0,
                 'sample_num'=>$item['numbers'] ? intval($item['numbers']) : 0,
                 'begin_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
                 'finish_time'=>strtotime($item['endTIme']) ? strtotime($item['startTime']) : 0,
@@ -336,10 +407,13 @@ class Reservation extends Model
                 'status'=>1
             ];
             if($teacherId){
-                $updatePromoIdData[] = [
-                    'id'=>$teacherId,
-                    'promo_id'=>$item['consumptionAmount'],
-                ];
+                if($teacherId >= 34485){
+                    $updatePromoIdData[] = [
+                        'id'=>$teacherId,
+                        'promo_id'=>$item['consumptionAmount'],
+                    ];
+                }
+
             }
 
         }
@@ -349,12 +423,12 @@ class Reservation extends Model
         DB::beginTransaction();
         try{
             Reservation::insert($insertData);
-            //$res = Reservation::updateBatch('student',$updatePromoIdData);
-            //Log::info($res);
+            $res = Reservation::updateBatch('student',$updatePromoIdData);
+            Log::info($res);
             DB::commit();
         }catch (\Exception $e){
             DB::rollBack();
-            Log::info($e->getMessage());
+            //Log::info($e->getMessage());
         }
 
 
