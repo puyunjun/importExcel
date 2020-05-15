@@ -203,6 +203,7 @@ class Reservation extends Model
 
             $q = "UPDATE ".$tableName." SET ";
             foreach ( $updateColumn as $uColumn ) {
+                //全部清0再减
                 $q .=  $uColumn." = $uColumn - CASE ";
 
                 foreach( $multipleData as $data ) {
@@ -329,7 +330,7 @@ class Reservation extends Model
                         ->where('id','>',34037)
                         ->value('id');
                     if(!$studentId){
-                        Log::info('学生姓名:'.$item['user']);
+                        //Log::info('学生姓名:'.$item['user']);
                     }
                 }
 
@@ -351,7 +352,7 @@ class Reservation extends Model
                         ->where('id','>',34037)
                         ->value('id');
                     if(!$teacherId){
-                        Log::info('导师姓名:'.$item['tutor']);
+                        //Log::info('导师姓名:'.$item['tutor']);
                     }
                 }
                 /*$teacherId = DB::table('student')
@@ -381,7 +382,7 @@ class Reservation extends Model
                         ->where('id','>',34037)
                         ->value('id');
                     if(!$operateId){
-                        Log::info('操作员姓名:'.$item['operator']);
+                        //Log::info('操作员姓名:'.$item['operator']);
                     }
                 }
                 /*$operateId = DB::table('student')
@@ -392,6 +393,24 @@ class Reservation extends Model
                     //Log::info($item['operator']);
                 }*/
             }
+            //处理开始时间
+            $item['endTIme'] = str_replace("1970/1/1", $item['appointmentDate'], $item['endTIme']);
+
+            $item['startTime'] = str_replace("1970/1/1", $item['appointmentDate'], $item['startTime']);
+
+            if(preg_match("/^\d{1}:\d{2}:\d{2}$/s", $item['endTIme']) || preg_match("/^\d{1}:\d{2}$/s",$item['endTIme'])  || preg_match("/^\d{2}:\d{2}:\d{2}$/s",$item['endTIme']) || preg_match("/^\d{2}:\d{2}$/s",$item['endTIme'])){
+                //处理结束时间
+                $item['endTIme'] = $item['appointmentDate'].' '.$item['endTIme'];
+            }
+
+            if(preg_match("/1900\/1\/0/s",$item['startTime'])){
+                $item['startTime'] = str_replace("1900/1/0", $item['appointmentDate'], $item['startTime']);
+            }
+            if(preg_match("/^\d{1}:\d{2}:\d{2}$/s", $item['startTime']) || preg_match("/^\d{1}:\d{2}$/s",$item['startTime']) || preg_match("/^\d{2}:\d{2}:\d{2}$/s", $item['startTime']) || preg_match("/^\d{2}:\d{2}$/s",$item['startTime'])){
+                $item['startTime'] = $item['appointmentDate'].' '.$item['startTime'];
+                //Log::info($item['appointmentDate'].' '.$item['startTime'] );
+                //Log::info(strtotime($item['startTime']) );
+            }
 
             $insertData[] = [
                 'device_id'=>$deviceId ? $deviceId : 0,
@@ -400,19 +419,19 @@ class Reservation extends Model
                 'opera_id'=>$operateId ? $operateId : 0,
                 'sample_num'=>$item['numbers'] ? intval($item['numbers']) : 0,
                 'begin_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
-                'finish_time'=>strtotime($item['endTIme']) ? strtotime($item['startTime']) : 0,
+                'finish_time'=>strtotime($item['endTIme']) ? strtotime($item['endTIme']) : 0,
                 'amount'=>$item['consumptionAmount'] ? intval($item['consumptionAmount']) : 0,
                 'create_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
                 'remark'=>$item['remark'] ?? '',
                 'status'=>1
             ];
             if($teacherId){
-                if($teacherId >= 34485){
+                //if($teacherId >= 34485){
                     $updatePromoIdData[] = [
                         'id'=>$teacherId,
                         'promo_id'=>$item['consumptionAmount'],
                     ];
-                }
+                //}
 
             }
 
@@ -422,7 +441,7 @@ class Reservation extends Model
         //添加到记录中
         DB::beginTransaction();
         try{
-            Reservation::insert($insertData);
+            //Reservation::insert($insertData);
             $res = Reservation::updateBatch('student',$updatePromoIdData);
             Log::info($res);
             DB::commit();

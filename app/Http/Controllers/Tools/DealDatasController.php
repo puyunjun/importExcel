@@ -18,6 +18,21 @@ class DealDatasController extends Controller
     //首页
     public function index(Request $request)
     {
+
+        /*if(preg_match("/1900\/1\/0/s","1900/1/0 9:50:00"))
+
+        {
+            $str = "1900/1/0 9:00:00";
+
+            $str = str_replace("1900/1/0", "2020/1/9", $str);
+            echo $str;
+
+        }else{
+
+            echo "“No”";
+
+        }
+        dd(strtotime('1900-01-01'));*/
         //$this->takeCopyData();
 
         /*$this->addStudentStu();
