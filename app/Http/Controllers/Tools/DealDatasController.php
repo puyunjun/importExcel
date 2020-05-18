@@ -19,8 +19,18 @@ class DealDatasController extends Controller
     public function index(Request $request)
     {
 
-        /*if(preg_match("/1900\/1\/0/s","1900/1/0 9:50:00"))
 
+        dd(strtotime("-2 week"),strtotime("+2 week"));
+       /* $time = '1900/1/0 0:00:00';
+        $parsed = date_parse($time);
+        $seconds = $parsed['hour'] * 3600+$parsed['minute'] * 60+$parsed['second'];
+        echo $seconds;
+        dd(date('Y-m-d H:i:s',1547053200));*/
+        /*if(preg_match("/1900\/1\/0/s","1900/1/0 9:50:00"))
+$logger = new FileAdapter('E:\phpstudy\phpstudy_pro\WWW\code\chongda2\app\logs\test.log');
+        $logger->info(
+            $start_time
+        );
         {
             $str = "1900/1/0 9:00:00";
 

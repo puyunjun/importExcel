@@ -421,6 +421,7 @@ class Reservation extends Model
                 'begin_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
                 'finish_time'=>strtotime($item['endTIme']) ? strtotime($item['endTIme']) : 0,
                 'amount'=>$item['consumptionAmount'] ? intval($item['consumptionAmount']) : 0,
+                'auth_time'=>self::getFen($item['totalTime']),
                 'create_time'=>strtotime($item['startTime']) ? strtotime($item['startTime']) : 0,
                 'remark'=>$item['remark'] ?? '',
                 'status'=>1
@@ -441,9 +442,9 @@ class Reservation extends Model
         //添加到记录中
         DB::beginTransaction();
         try{
-            //Reservation::insert($insertData);
-            $res = Reservation::updateBatch('student',$updatePromoIdData);
-            Log::info($res);
+            Reservation::insert($insertData);
+            //$res = Reservation::updateBatch('student',$updatePromoIdData);
+            //Log::info($res);
             DB::commit();
         }catch (\Exception $e){
             DB::rollBack();
@@ -451,5 +452,12 @@ class Reservation extends Model
         }
 
 
+    }
+
+    protected static function getFen($time = '')
+    {
+        $parsed = date_parse($time);
+        $seconds = ($parsed['hour'] * 3600) + ($parsed['minute'] * 60) + $parsed['second'];
+        return $seconds;
     }
 }
